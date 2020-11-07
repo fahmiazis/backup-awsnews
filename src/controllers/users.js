@@ -91,5 +91,16 @@ module.exports = {
         }
       }
     }
+  },
+  upload: async (req, res) => {
+    const id = req.user.id
+    const picture = { picture: `/uploads/${req.file.filename}` }
+    const result = await User.findByPk(id)
+    if (result) {
+      result.update(picture)
+      return responseStandard(res, 'update image succesfully', { image: result.picture })
+    } else {
+      return responseStandard(res, 'update image failed', {}, 400, false)
+    }
   }
 }

@@ -17,6 +17,7 @@ const authMiddleware = require('./middlewares/auth')
 
 app.use('/auth', userRoute)
 app.use('/profile', authMiddleware, profilRoute)
+app.use('/uploads', express.static('assets/uploads/'))
 
 app.get('/', (req, res) => {
   res.send({
