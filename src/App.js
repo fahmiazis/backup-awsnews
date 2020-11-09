@@ -12,11 +12,13 @@ app.use(cors())
 
 const userRoute = require('./routes/users')
 const profilRoute = require('./routes/profile')
+const newsRoute = require('./routes/news')
 
 const authMiddleware = require('./middlewares/auth')
 
 app.use('/auth', userRoute)
 app.use('/profile', authMiddleware, profilRoute)
+app.use('/news', authMiddleware, newsRoute)
 app.use('/uploads', express.static('assets/uploads/'))
 
 app.get('/', (req, res) => {
