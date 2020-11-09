@@ -1,4 +1,4 @@
-const { news } = require('../models')
+const { news, User, category } = require('../models')
 const joi = require('joi')
 const responseStandard = require('../helpers/response')
 const { Op } = require('sequelize')
@@ -67,11 +67,17 @@ module.exports = {
       find = { title: { [Op.like]: `%${searchValue}%` } }
     } else if (searchKey === 'category_id') {
       find = { category_id: { [Op.like]: `%${searchValue}%` } }
+    } else if (searchKey === 'user_id') {
+      find = { user_id: { [Op.like]: `%${searchValue}%` } }
     } else {
       find = { title: { [Op.like]: `%${searchValue}%` } }
     }
     const result = await news.findAndCountAll({
       attributes: { exclude: ['content'] },
+      include: [
+        { model: User, as: 'user', attributes: { exclude: ['password', 'email', 'createdAt', 'updatedAt'] } },
+        { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+      ],
       where: find,
       order: [['createdAt', 'DESC']],
       limit: limit,

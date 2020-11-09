@@ -14,12 +14,14 @@ const userRoute = require('./routes/users')
 const profilRoute = require('./routes/profile')
 const newsRoute = require('./routes/news')
 const catRoute = require('./routes/category')
+const postNewsRoute = require('./routes/postNews')
 
 const authMiddleware = require('./middlewares/auth')
 
 app.use('/auth', userRoute)
 app.use('/profile', authMiddleware, profilRoute)
-app.use('/news', authMiddleware, newsRoute)
+app.use('/news', newsRoute)
+app.use('/private', authMiddleware, postNewsRoute)
 app.use('/category', authMiddleware, catRoute)
 app.use('/uploads', express.static('assets/uploads/'))
 
