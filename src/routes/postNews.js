@@ -5,7 +5,7 @@ const upload = require('../helpers/upload')
 
 route.post('/category/post', category.postCategory)
 route.post('/news/post', news.postNews)
-route.patch('/news/post/images', upload, news.uploadImageNews)
+route.patch('/news/post/images/:id', upload, news.uploadImageNews)
 route.patch('/news/edit/:id', news.editNews)
 
 module.exports = route

@@ -1,7 +1,7 @@
 const { news, User, category } = require('../models')
 const joi = require('joi')
 const responseStandard = require('../helpers/response')
-const { Op, Sequelize } = require('sequelize')
+const { Op } = require('sequelize')
 const qs = require('querystring')
 
 module.exports = {
@@ -36,7 +36,8 @@ module.exports = {
     const id = req.params.id
     const result = await news.findByPk(id)
     if (result) {
-      result.update({ view: Sequelize.literal('view + 1') })
+      const view = { view: result.view + 1 }
+      result.update(view)
       responseStandard(res, 'detail news', { data: result })
     } else {
       responseStandard(res, 'Data not found', {}, 400, false)
