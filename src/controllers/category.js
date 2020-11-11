@@ -68,10 +68,10 @@ module.exports = {
 
     const { pages, currentPage } = pageInfo
     if (currentPage < pages) {
-      pageInfo.nextLink = `http://localhost:8080/category?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
+      pageInfo.nextLink = `http://54.147.40.208:6060/category?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
     }
     if (currentPage > 1) {
-      pageInfo.prevLink = `http://localhost:8080/category?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
+      pageInfo.prevLink = `http://54.147.40.208:6060/category?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
     if (result) {
       responseStandard(res, 'category news', { data: result, pageInfo })
@@ -111,10 +111,10 @@ module.exports = {
 
     const { pages, currentPage } = pageInfo
     if (currentPage < pages) {
-      pageInfo.nextLink = `http://localhost:8080/category?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
+      pageInfo.nextLink = `http://54.147.40.208:6060/category?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
     }
     if (currentPage > 1) {
-      pageInfo.prevLink = `http://localhost:8080/category?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
+      pageInfo.prevLink = `http://54.147.40.208:6060/category?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
     if (result) {
       responseStandard(res, 'category news', { data: result, pageInfo })
