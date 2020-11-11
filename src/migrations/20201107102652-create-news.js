@@ -17,6 +17,12 @@ module.exports = {
       content: {
         type: Sequelize.STRING(20000)
       },
+      picture: {
+        type: Sequelize.STRING
+      },
+      view: {
+        type: Sequelize.INTEGER
+      },
       category_id: {
         type: Sequelize.INTEGER
       },

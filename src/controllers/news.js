@@ -1,7 +1,7 @@
 const { news, User, category } = require('../models')
 const joi = require('joi')
 const responseStandard = require('../helpers/response')
-const { Op } = require('sequelize')
+const { Op, Sequelize } = require('sequelize')
 const qs = require('querystring')
 
 module.exports = {
@@ -36,6 +36,7 @@ module.exports = {
     const id = req.params.id
     const result = await news.findByPk(id)
     if (result) {
+      result.update({ view: Sequelize.literal('view + 1') })
       responseStandard(res, 'detail news', { data: result })
     } else {
       responseStandard(res, 'Data not found', {}, 400, false)
@@ -174,6 +175,17 @@ module.exports = {
       responseStandard(res, 'list news', { data: result, pageInfo })
     } else {
       return responseStandard(res, 'you have not news', {}, 400, false)
+    }
+  },
+  uploadImageNews: async (req, res) => {
+    const id = req.params.id
+    const picture = { picture: `/uploads/${req.file.filename}` }
+    const result = await news.findByPk(id)
+    if (result) {
+      result.update(picture)
+      return responseStandard(res, 'update image succesfully', { image: result.picture })
+    } else {
+      return responseStandard(res, 'update image failed', {}, 400, false)
     }
   }
 }

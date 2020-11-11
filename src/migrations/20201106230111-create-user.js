@@ -20,6 +20,12 @@ module.exports = {
       birthdate: {
         type: Sequelize.DATEONLY
       },
+      phone: {
+        type: Sequelize.STRING
+      },
+      gender: {
+        type: Sequelize.ENUM('Laki-laki', 'Perempuan')
+      },
       picture: {
         type: Sequelize.STRING
       },
