@@ -15,6 +15,7 @@ const profilRoute = require('./routes/profile')
 const newsRoute = require('./routes/news')
 const catRoute = require('./routes/category')
 const postNewsRoute = require('./routes/postNews')
+const bookmarkRoute = require('./routes/bookmark')
 
 const authMiddleware = require('./middlewares/auth')
 
@@ -23,6 +24,7 @@ app.use('/profile', authMiddleware, profilRoute)
 app.use('/news', newsRoute)
 app.use('/private', authMiddleware, postNewsRoute)
 app.use('/category', authMiddleware, catRoute)
+app.use('/bookmark', authMiddleware, bookmarkRoute)
 app.use('/uploads', express.static('assets/uploads/'))
 
 app.get('/', (req, res) => {

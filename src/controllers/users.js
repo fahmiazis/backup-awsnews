@@ -106,5 +106,14 @@ module.exports = {
     } else {
       return responseStandard(res, 'update image failed', {}, 400, false)
     }
+  },
+  getProfile: async (req, res) => {
+    const id = req.user.id
+    const result = await User.findByPk(id, { attributes: { exclude: ['password'] } })
+    if (result) {
+      return responseStandard(res, 'success get profile', { data: result })
+    } else {
+      return responseStandard(res, 'data not found', {}, 400, false)
+    }
   }
 }
