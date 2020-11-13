@@ -188,5 +188,20 @@ module.exports = {
     } else {
       return responseStandard(res, 'update image failed', {}, 400, false)
     }
+  },
+  deleteNews: async (req, res) => {
+    const id = req.user.id
+    const newsId = req.params.id
+    const result = await news.findByPk(newsId)
+    if (result) {
+      if (result.user_id === id) {
+        await result.destroy()
+        return responseStandard(res, 'delete news success')
+      } else {
+        return responseStandard(res, 'data not found', {}, 404, false)
+      }
+    } else {
+      return responseStandard(res, 'data not found', {}, 404, false)
+    }
   }
 }
