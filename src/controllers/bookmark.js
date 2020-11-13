@@ -73,9 +73,8 @@ module.exports = {
   },
   deleteAllBookmark: async (req, res) => {
     const id = req.user.id
-    const result = await bookmark.findAll({ where: { userId: id } })
+    const result = await bookmark.destroy({ where: { userId: id } })
     if (result) {
-      await result.destroy()
       return responseStandard(res, 'all bookmark has delete')
     } else {
       return responseStandard(res, 'data not found', {}, 400, false)
@@ -85,9 +84,13 @@ module.exports = {
     const id = req.user.id
     const newsId = req.params.id
     const result = await bookmark.findOne({ where: { newsId: newsId } })
-    if (result.userId === id) {
-      await result.destroy()
-      return responseStandard(res, 'delete success')
+    if (result) {
+      if (result.userId === id) {
+        await result.destroy()
+        return responseStandard(res, 'delete success')
+      } else {
+        return responseStandard(res, 'data not found', {}, 404, false)
+      }
     } else {
       return responseStandard(res, 'data not found', {}, 404, false)
     }
