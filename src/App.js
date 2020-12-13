@@ -23,7 +23,7 @@ app.use('/auth', userRoute)
 app.use('/profile', authMiddleware, profilRoute)
 app.use('/news', newsRoute)
 app.use('/private', authMiddleware, postNewsRoute)
-app.use('/category', authMiddleware, catRoute)
+app.use('/category', catRoute)
 app.use('/bookmark', authMiddleware, bookmarkRoute)
 app.use('/uploads', express.static('assets/uploads/'))
 
