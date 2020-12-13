@@ -1,4 +1,4 @@
-const { category, news } = require('../models')
+const { category, news, User } = require('../models')
 const responseStandard = require('../helpers/response')
 const joi = require('joi')
 const { Op } = require('sequelize')
@@ -22,16 +22,18 @@ module.exports = {
     }
   },
   getCategory: async (req, res) => {
-    let { search, limit, page } = req.query
+    let { search, limit, page, sort } = req.query
     let searchValue = ''
-    let searchKey = ''
-    let find = {}
+    let sortValue = ''
     if (typeof search === 'object') {
-      searchKey = Object.keys(search)[0]
       searchValue = Object.values(search)[0]
     } else {
-      searchKey = 'name'
       searchValue = search || ''
+    }
+    if (typeof sort === 'object') {
+      sortValue = Object.values(sort)[0]
+    } else {
+      sortValue = sort || 'createdAt'
     }
     if (!limit) {
       limit = 5
@@ -43,16 +45,13 @@ module.exports = {
     } else {
       page = parseInt(page)
     }
-    if (searchKey === 'name') {
-      find = { name: { [Op.like]: `%${searchValue}%` } }
-    } else if (searchKey === 'category_id') {
-      find = { id: { [Op.like]: `%${searchValue}%` } }
-    } else {
-      find = { name: { [Op.like]: `%${searchValue}%` } }
-    }
     const result = await category.findAndCountAll({
-      where: find,
-      order: [['createdAt', 'ASC']],
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${searchValue}%` } }
+        ]
+      },
+      order: [[`${sortValue}`, 'ASC']],
       limit: limit,
       offset: (page - 1) * limit
     })
@@ -94,10 +93,23 @@ module.exports = {
     }
     const result = await category.findAndCountAll({
       where: { id: id },
-      include: [{ model: news, as: 'news', attributes: { exclude: ['content'] } }],
+      include: [
+        {
+          model: news,
+          as: 'news',
+          attributes: { exclude: ['content'] },
+          include: [
+            { model: User, as: 'user', attributes: { exclude: ['password', 'email', 'createdAt', 'updatedAt'] } },
+            { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+          ]
+        }
+      ],
       order: [['createdAt', 'ASC']],
       limit: limit,
       offset: (page - 1) * limit
+    })
+    const resdata = result.rows.map(item => {
+      return item.news
     })
     const pageInfo = {
       count: result.count,
@@ -117,7 +129,15 @@ module.exports = {
       pageInfo.prevLink = `http://54.147.40.208:6060/category?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
     if (result) {
-      responseStandard(res, 'category news', { data: result, pageInfo })
+      responseStandard(res,
+        'category news',
+        {
+          data: {
+            count: result.count,
+            rows: resdata[0]
+          },
+          pageInfo
+        })
     } else {
       responseStandard(res, 'category not found', {}, 400, false)
     }

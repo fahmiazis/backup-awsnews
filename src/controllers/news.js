@@ -44,16 +44,18 @@ module.exports = {
     }
   },
   getNews: async (req, res) => {
-    let { search, limit, page } = req.query
+    let { search, limit, page, sort } = req.query
     let searchValue = ''
-    let searchKey = ''
-    let find = {}
+    let sortValue = ''
     if (typeof search === 'object') {
-      searchKey = Object.keys(search)[0]
       searchValue = Object.values(search)[0]
     } else {
-      searchKey = 'title'
       searchValue = search || ''
+    }
+    if (typeof sort === 'object') {
+      sortValue = Object.values(sort)[0]
+    } else {
+      sortValue = sort || 'createdAt'
     }
     if (!limit) {
       limit = 5
@@ -65,23 +67,19 @@ module.exports = {
     } else {
       page = parseInt(page)
     }
-    if (searchKey === 'title') {
-      find = { title: { [Op.like]: `%${searchValue}%` } }
-    } else if (searchKey === 'category_id') {
-      find = { category_id: { [Op.like]: `%${searchValue}%` } }
-    } else if (searchKey === 'user_id') {
-      find = { user_id: { [Op.like]: `%${searchValue}%` } }
-    } else {
-      find = { title: { [Op.like]: `%${searchValue}%` } }
-    }
     const result = await news.findAndCountAll({
       attributes: { exclude: ['content'] },
       include: [
         { model: User, as: 'user', attributes: { exclude: ['password', 'email', 'createdAt', 'updatedAt'] } },
         { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
       ],
-      where: find,
-      order: [['createdAt', 'DESC']],
+      where: {
+        [Op.or]: [
+          { title: { [Op.like]: `%${searchValue}%` } },
+          { headline: { [Op.like]: `%${searchValue}%` } }
+        ]
+      },
+      order: [[`${sortValue}`, 'DESC']],
       limit: limit,
       offset: (page - 1) * limit
     })
@@ -102,8 +100,71 @@ module.exports = {
     if (currentPage > 1) {
       pageInfo.prevLink = `http://54.147.40.208:6060/news?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
-    if (result) {
+    if (result.count !== 0) {
       responseStandard(res, 'list news', { data: result, pageInfo })
+    } else if (result.count === 0) {
+      const data = await category.findAndCountAll({
+        include: [
+          {
+            model: news,
+            as: 'news',
+            attributes: { exclude: ['content'] },
+            include: [
+              { model: User, as: 'user', attributes: { exclude: ['password', 'email', 'createdAt', 'updatedAt'] } },
+              { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+            ]
+          }
+        ],
+        where: {
+          [Op.or]: [
+            { name: { [Op.like]: `%${searchValue}%` } }
+          ]
+        },
+        order: [['name', 'ASC']],
+        limit: limit,
+        offset: (page - 1) * limit
+      })
+      const resData = data.rows.map(item => {
+        return item.news
+      })
+      const finalData = []
+      for (let i = 0; i < resData.length; i++) {
+        for (let j = 0; j < resData[i].length; j++) {
+          const element = resData[i][j]
+          finalData.push(element)
+        }
+      }
+      const pageInfo = {
+        count: data.count,
+        pages: 0,
+        currentPage: page,
+        limitPerPage: limit,
+        nextLink: null,
+        prevLink: null
+      }
+      pageInfo.pages = Math.ceil(data.count / limit)
+
+      const { pages, currentPage } = pageInfo
+      if (currentPage < pages) {
+        pageInfo.nextLink = `http://54.147.40.208:6060/news?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
+      }
+      if (currentPage > 1) {
+        pageInfo.prevLink = `http://54.147.40.208:6060/news?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
+      }
+      if (data) {
+        responseStandard(
+          res,
+          'list news',
+          {
+            data: {
+              count: data.count,
+              rows: finalData
+            },
+            pageInfo
+          })
+      } else {
+        responseStandard(res, 'news not found', {}, 400, false)
+      }
     } else {
       responseStandard(res, 'news not found', {}, 400, false)
     }
