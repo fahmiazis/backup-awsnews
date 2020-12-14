@@ -1,4 +1,4 @@
-const { bookmark, news } = require('../models')
+const { bookmark, news, User, category } = require('../models')
 const responseStandard = require('../helpers/response')
 const joi = require('joi')
 const qs = require('querystring')
@@ -17,11 +17,20 @@ module.exports = {
         userId: userId,
         newsId: results.newsId
       }
-      const result = await bookmark.create(data)
-      if (result) {
+      const find = await bookmark.findOne({
+        where: {
+          newsId: results.newsId
+        }
+      })
+      if (find) {
         return responseStandard(res, 'added bookmark successfully')
       } else {
-        return responseStandard(res, 'failed to add bookmark', {}, 400, false)
+        const result = await bookmark.create(data)
+        if (result) {
+          return responseStandard(res, 'added bookmark successfully')
+        } else {
+          return responseStandard(res, 'failed to add bookmark', {}, 400, false)
+        }
       }
     }
   },
@@ -42,7 +51,15 @@ module.exports = {
       where: { userId: id },
       attributes: { exclude: ['id'] },
       include: [
-        { model: news, as: 'news', attributes: { exclude: ['content'] } }
+        {
+          model: news,
+          as: 'news',
+          attributes: { exclude: ['content'] },
+          include: [
+            { model: User, as: 'user', attributes: { exclude: ['password', 'email', 'createdAt', 'updatedAt'] } },
+            { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+          ]
+        }
       ],
       order: [['createdAt', 'DESC']],
       limit: limit,
@@ -58,6 +75,17 @@ module.exports = {
     }
     pageInfo.pages = Math.ceil(result.count / limit)
 
+    const resData = result.rows.map(item => {
+      return item.news
+    })
+    const finalData = []
+    for (let i = 0; i < resData.length; i++) {
+      for (let j = 0; j < resData[i].length; j++) {
+        const element = resData[i][j]
+        finalData.push(element)
+      }
+    }
+
     const { pages, currentPage } = pageInfo
     if (currentPage < pages) {
       pageInfo.nextLink = `http://54.147.40.208:6060/bookmark?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
@@ -66,7 +94,16 @@ module.exports = {
       pageInfo.prevLink = `http://54.147.40.208:6060/bookmark?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
     if (result) {
-      responseStandard(res, 'list news', { data: result, pageInfo })
+      responseStandard(
+        res,
+        'list bookmark',
+        {
+          data: {
+            count: result.count,
+            rows: finalData
+          },
+          pageInfo
+        })
     } else {
       responseStandard(res, 'news not found', {}, 400, false)
     }
