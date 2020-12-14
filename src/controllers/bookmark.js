@@ -78,13 +78,6 @@ module.exports = {
     const resData = result.rows.map(item => {
       return item.news
     })
-    const finalData = []
-    for (let i = 0; i < resData.length; i++) {
-      for (let j = 0; j < resData[i].length; j++) {
-        const element = resData[i][j]
-        finalData.push(element)
-      }
-    }
 
     const { pages, currentPage } = pageInfo
     if (currentPage < pages) {
@@ -100,7 +93,7 @@ module.exports = {
         {
           data: {
             count: result.count,
-            rows: finalData
+            rows: resData
           },
           pageInfo
         })
