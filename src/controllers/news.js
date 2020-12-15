@@ -34,7 +34,12 @@ module.exports = {
   },
   getDetailNews: async (req, res) => {
     const id = req.params.id
-    const result = await news.findByPk(id)
+    const result = await news.findOne({
+      where: { id: id },
+      include: [
+        { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+      ]
+    })
     if (result) {
       const view = { view: result.view + 1 }
       result.update(view)
@@ -200,7 +205,7 @@ module.exports = {
     let { limit, page } = req.query
     const idUser = req.user.id
     if (!limit) {
-      limit = 5
+      limit = 10
     } else {
       limit = parseInt(limit)
     }
@@ -211,6 +216,9 @@ module.exports = {
     }
     const result = await news.findAndCountAll({
       attributes: { exclude: ['content'] },
+      include: [
+        { model: category, as: 'category', attributes: { exclude: ['createdAt', 'updatedAt'] } }
+      ],
       where: { user_id: idUser },
       order: [['createdAt', 'DESC']],
       limit: limit,
@@ -228,10 +236,10 @@ module.exports = {
 
     const { pages, currentPage } = pageInfo
     if (currentPage < pages) {
-      pageInfo.nextLink = `http://54.147.40.208:6060/news?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
+      pageInfo.nextLink = `http://54.147.40.208:6060/private/news/user?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
     }
     if (currentPage > 1) {
-      pageInfo.prevLink = `http://54.147.40.208:6060/news?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
+      pageInfo.prevLink = `http://54.147.40.208:6060/private/news/user?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
     }
     if (result) {
       responseStandard(res, 'list news', { data: result, pageInfo })
