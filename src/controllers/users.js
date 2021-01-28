@@ -66,7 +66,8 @@ module.exports = {
     const schema = joi.object({
       name: joi.string(),
       email: joi.string().email(),
-      birthdate: joi.date()
+      gender: joi.string(),
+      phone: joi.string()
     })
     const { value: results, error } = schema.validate(req.body)
     if (error) {

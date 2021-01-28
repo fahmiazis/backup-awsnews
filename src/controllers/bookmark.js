@@ -1,6 +1,7 @@
 const { bookmark, news, User, category } = require('../models')
 const responseStandard = require('../helpers/response')
 const joi = require('joi')
+const { Op } = require('sequelize')
 const qs = require('querystring')
 
 module.exports = {
@@ -19,7 +20,10 @@ module.exports = {
       }
       const find = await bookmark.findOne({
         where: {
-          newsId: results.newsId
+	[Op.and]: [
+	  { newsId: results.newsId },
+	  { userId: userId }
+	 ]
         }
       })
       if (find) {
